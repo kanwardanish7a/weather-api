@@ -4,12 +4,16 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAngularApp",
-        builder => builder.WithOrigins("http://localhost:4200") // Angular dev server
-                         .AllowAnyHeader()
-                         .AllowAnyMethod());
+builder.Services.AddCors(options => {
+    options.AddPolicy("ProductionPolicy", policy => {
+        policy.WithOrigins(
+                "https://gentle-sea-03ca0d80f.6.azurestaticapps.net", // Your Angular app
+                "http://localhost:4200" // Keep for local dev
+            )
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials(); // If using cookies/auth
+    });
 });
 
 var app = builder.Build();
@@ -42,7 +46,7 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast")
 .WithOpenApi();
-app.UseCors("AllowAngularApp"); // Add this line
+app.UseCors("ProductionPolicy");
 
 app.Run();
 
